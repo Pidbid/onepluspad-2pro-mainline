@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Hand the panel backlight to the session user.
+#
+# The panel is a single led-backlight device whose attributes are root-only by
+# default: the distribution's rules tag it with "seat" but not "uaccess", and
+# desktop users are not in the video group. sysfs carries no extended
+# attributes either — setfacl fails with "Operation not supported" — so neither
+# uaccess nor a seat-based ACL can ever grant access here; the mode is the only
+# lever.
+#
+# Without write access the desktop gets no brightness control at all. GNOME's
+# shell writes the attribute directly (MetaBacklightSysfs), falls back to
+# logind's SetBrightness when that write fails, and logind refuses while the
+# session is not yet foreground ("Session is not in foreground"). The failure is
+# cached for the rest of the session, so the quick-settings brightness slider
+# never appears.
+ACTION=="add|change", SUBSYSTEM=="backlight", GROUP="users", MODE="0664"
